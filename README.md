@@ -67,19 +67,22 @@ Alles läuft auf Railway - **kein eingeschalteter Laptop nötig**. Das Briefing 
 
 ```mermaid
 flowchart TD
-    S[Stud.IP] -->|stündlich, inkrementell| D[Downloader]
-    D -->|Originale + Markdown| O[OneDrive]
-    O -->|Extraktion + OCR| R[RAG-Pipeline]
-    R -->|Katalog + Vektoren| C[Kontextdienst]
-    M[Uni-Mail] -->|HTTPS ActiveSync| X[Maildienst]
-    K[iCloud-Kalender] -.-> G
-    C -->|privates Netz| G[Gateway: /mcp]
-    X --> G
-    G -->|OAuth 2.0 + PKCE| P[Plugin: Uni]
-    P --> CG[ChatGPT]
-    P --> CL[Claude]
-    G -->|täglich 08:00| B[Briefing]
+    S[Stud.IP] -->|inkrementeller Abruf| D[Downloader]
+    D -->|Dateien und Katalog| O[OneDrive]
+    O -->|Extraktion und OCR| R[Dokumentindex]
+    R --> C[Kontextdienst: Volltext und Embeddings]
+    R -.->|laufende Installation| K[Knowledge Graph und ANN-Index]
+    K -.-> C
+    M[Uni-Mail] -->|HTTPS ActiveSync| X[Maildienst und Aufgabenregister]
+    I[iCloud-Kalender] <--> G[Gateway: MCP]
+    C -->|privates Netz| G
+    X -->|privates Netz| G
+    U[ChatGPT oder anderer MCP-Client] -->|OAuth 2.0 und PKCE| G
+    T[ChatGPT-Aufgabe: 08:00] -.->|startet Briefing im Client| U
+    U --> B[Briefing]
 ```
+
+Der Knowledge Graph und der ANN-Index gehören zum neueren Entwicklungsstand der laufenden Installation. Der öffentliche Code enthält diese Erweiterungen noch nicht. Die ChatGPT-Aufgabe ist gesondert eingerichtet; das Gateway stellt die Briefing-Daten bereit.
 
 ## Wie der Stud.IP-Abruf funktioniert
 
@@ -107,31 +110,26 @@ Strikt lesend: keine Kurseintragung, keine Schreibzugriffe. Fehler mit 408/429/5
 - **Agenten-sicherer Mailversand:** Dreistufig und hart abgesichert - Entwurf → frische Vorschau → Versand nur mit frischem Bestätigungstoken und ausdrücklichem Einzelauftrag.
 - **Kalender-Abgleich mit Konflikterkennung:** Belegte Terminserien aus der verbindlichen Planung gegen iCloud prüfen; Schreibzugriff standardmäßig deaktiviert.
 
-## Der Agent-Graph
+## Von der Frage zur Antwort
 
-Das Plugin ist kein simpler Request-Response-Endpunkt - der verbundene Client plant Werkzeugaufrufe als Graph: paralleler Fan-out, Evidenz-Check, Schleife bis die Belege stimmen, und Re-Autorisierung als Conditional Edge.
+Der KI-Client entscheidet anhand der Anfrage, welche Werkzeuge er aufruft. Das Gateway prüft die Berechtigung für jeden Werkzeugaufruf. Der Ablauf unten zeigt ein mögliches Beispiel, keinen fest programmierten Agenten-Graphen.
 
 ```mermaid
 flowchart TD
-    U[Nutzer-Prompt in ChatGPT / Claude] --> R{Scope-Check am Gateway}
-    R -->|insufficient_scope| A[WWW-Authenticate Challenge - Re-Auth im Chat]
-    A --> U
-    R -->|ok| P[Planer: Werkzeugwahl]
-    P --> S1[uni_search - BM25 + Embeddings]
-    P --> S2[mail_search - Postfach]
-    P --> S3[pilot_obligations - Aufgabenregister]
-    P --> S4[calendar_events - iCloud]
-    S1 --> F{Evidenz ausreichend?}
-    S2 --> F
-    S3 --> F
-    S4 --> F
-    F -->|nein, andere Anfrage| P
-    F -->|ja| G[uni_read_page / fetch - Originalseiten vollstaendig]
-    G --> C[Synthese mit Pflicht-Zitaten: Datei, Seite, Hash]
-    C --> O[Antwort mit Belegen]
+    U[Frage im KI-Client] --> P[Client wählt passende Werkzeuge]
+    P --> G[Gateway prüft Berechtigungen]
+    G -->|freigegeben| S[Kurs- und Mailwerkzeuge]
+    G -->|freigegeben| A[Aufgaben und Kalender]
+    G -->|fehlende Berechtigung| R[Freigabe erneut anfordern]
+    S --> E[Suchergebnisse und Quellen]
+    A --> E
+    E --> C[Client prüft relevante Quellen]
+    C -->|bei Bedarf| F[Originalseite oder Mail abrufen]
+    E --> O[Client formuliert Antwort]
+    F --> O
 ```
 
-Jeder Treffer traegt Kurs, Originalpfad und SHA-256 - der Graph liefert keine Antwort ohne Rueckverfolgbarkeit.
+Kursquellen enthalten Fundstellen und können über `uni_read_page` oder `fetch` weiter geprüft werden. Quellenangaben sind Teil der Antwortanweisung; eine fehlerfreie Antwort wird nicht technisch garantiert.
 
 ## Stack
 
@@ -155,10 +153,10 @@ Python · FastMCP · SQLite FTS5 · OpenAI Embeddings · Railway · OneDrive · 
 ## Status
 
 - **Live:** Lesen über ChatGPT (Suche mit Seitenzitaten, Systemstatus, Briefing), Mailabruf, authentifizierter ActiveSync-Transport.
-- **Deploy-ausstehend:** Schreib- und Versandkette (entwickelt, getestet, vom Nutzer autorisiert) - ein Wächter deployed und prüft automatisch, sobald Railway wieder Builds annimmt; danach persönliche Freigabe, Plugin-Umschaltung und Testmail.
+- **Schreibfunktionen:** Mailentwürfe und Versand sind getrennt; für die Nutzung sind die passenden Berechtigungen und eine ausdrücklich bestätigte Versandvorschau erforderlich. Der getestete Produktionsstand ist für jede Installation gesondert zu prüfen.
 - **Läuft kontinuierlich:** Stündlicher Stud.IP-Abruf, RAG-Backfill (~120 Dateien/Lauf), Embedding-Ausbau.
 
-Aktueller Detailstand: [docs/STATUS.md](docs/STATUS.md).
+Hinweise zur öffentlichen Fassung: [docs/STATUS.md](docs/STATUS.md).
 
 ## Entwicklung
 
@@ -170,7 +168,7 @@ python3 scripts/check_repository.py
 python3 scripts/check.py
 ```
 
-95 Offline-Tests mit künstlichen Daten. Produktionszugänge, Kursinhalte und Mailtexte gehören niemals ins Repository.
+Offline-Tests mit künstlichen Daten. Produktionszugänge, Kursinhalte und Mailtexte gehören niemals ins Repository.
 
 ## Dein Uni-Tag in der ChatGPT-App
 
