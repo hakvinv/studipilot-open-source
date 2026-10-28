@@ -1,8 +1,8 @@
 <p align="center"><img src="mascot.png" alt="StudIPilot Maskottchen" width="170"><br><img src="wordmark.png" alt="StudIPilot" width="380"></p>
 
-**Dein Uni-Betrieb, direkt in der ChatGPT-App, die du eh schon nutzt.**
+**Ein LLM-Plugin für deinen Uni-Alltag - direkt im Chat mit deinem KI-Assistenten.**
 
-Das System zieht Kursmaterial automatisch aus Stud.IP, macht es semantisch durchsuchbar und hängt Kurse, Mail, Kalender und Aufgaben als **ein einziges privates Plugin** an ChatGPT, Claude und andere LLM-Clients an.
+StudIPilot ist ein **LLM-Plugin mit MCP-Schnittstelle**: Es zieht Kursmaterial aus Stud.IP, macht es durchsuchbar und verbindet Kurse, Mail, Kalender und Aufgaben mit ChatGPT und anderen kompatiblen KI-Assistenten. Die Bedienung erfolgt direkt im Chat; ein privater Zugang schützt die persönlichen Daten.
 
 **Kein neues Tool. Kein Dashboard. Kein weiterer Login.** Du öffnest nichts - du schreibst einfach im normalen Chat, wie du es jeden Tag tust. Das Plugin ist die Oberfläche.
 
