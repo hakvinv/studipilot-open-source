@@ -1,0 +1,6 @@
+interface:
+  display_name: "Uni-Kontext"
+  short_description: "Passende Uni-Unterlagen mit Quellen abrufen"
+  default_prompt: "Nutze $uni-kontext, um passende Kursunterlagen zu meiner Frage abzurufen und daraus mit Quellen zu antworten."
+policy:
+  allow_implicit_invocation: true
