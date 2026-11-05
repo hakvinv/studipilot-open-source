@@ -2,6 +2,8 @@
 
 **Ein LLM-Plugin für deinen Uni-Alltag - direkt im Chat mit deinem KI-Assistenten.**
 
+**Nutzungsrechte:** Der Quellcode ist öffentlich einsehbar. Nutzung, Änderung und Weitergabe benötigen grundsätzlich die vorherige schriftliche Erlaubnis des jeweiligen Rechteinhabers. Gesetzliche Ausnahmen und die GitHub-Nutzungsbedingungen bleiben unberührt. Details stehen in [LICENSE](LICENSE); frühere MIT-Veröffentlichungen behalten ihre dort erteilten Rechte.
+
 StudIPilot ist ein **LLM-Plugin mit MCP-Schnittstelle**: Es zieht Kursmaterial aus Stud.IP, macht es durchsuchbar und verbindet Kurse, Mail, Kalender und Aufgaben mit ChatGPT und anderen kompatiblen KI-Assistenten. Die Bedienung erfolgt direkt im Chat; ein privater Zugang schützt die persönlichen Daten.
 
 **Kein neues Tool. Kein Dashboard. Kein weiterer Login.** Du öffnest nichts - du schreibst einfach im normalen Chat, wie du es jeden Tag tust. Das Plugin ist die Oberfläche.
